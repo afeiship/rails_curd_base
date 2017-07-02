@@ -2,24 +2,34 @@ require 'rails'
 
 module RailsCurdBase
   module CurdHelper
-
     class << self
-      attr_accessor :model
-      attr_accessor :actions
-      attr_accessor :context
+      %w(model_class model fields messages).each do |attr|
+        attr_accessor attr;
+      end
     end
 
-    # public helpers
+    #
+    # %w(Model model fields messages).each do |el|
+    #   define_method el do |inValue|
+    #     eval "CurdHelper.#{el} = #{inValue}"
+    #   end
+    # end
+
+    def model_class(inValue)
+      CurdHelper.model_class = inValue
+    end
+
     def model(inValue)
       CurdHelper.model = inValue
     end
 
-    def actions(inValue)
-      CurdHelper.actions = inValue
+    def fields(inValue)
+      CurdHelper.fields = inValue
     end
 
-    def context(inValue)
-      CurdHelper.context = inValue
+    def messages(inValue)
+      CurdHelper.messages = inValue
     end
+
   end
 end

@@ -3,55 +3,56 @@ require 'rails'
 module RailsCurdBase
 
   module CurdActions
+
     def index
-      @items = CurdHelper.model.all
+      @items = CurdHelper.model_class.all
     end
 
     def show
-      @item = CurdHelper.model.find(params[:id])
+      @item = CurdHelper.model_class.find(params[:id])
     end
 
     def edit
-      @item = CurdHelper.model.find(params[:id])
+      @item = CurdHelper.model_class.find(params[:id])
     end
 
     def new
-      @item = CurdHelper.model.new
+      @item = CurdHelper.model_class.new
     end
 
     def create
-      @item = CurdHelper.model.new(item_params)
+      @item = CurdHelper.model_class.new(item_params)
       if @item.save
-        redirect_to @item, notice: 'Post was successfully created.'
+        redirect_to @item, notice: CurdHelper.messages[:create]
       else
         render :new
       end
     end
 
     def update
-      @item = CurdHelper.model.find(params[:id])
+      @item = CurdHelper.model_class.find(params[:id])
       if @item.update(item_params)
-        redirect_to @item, notice: 'Post was successfully updated.'
+        redirect_to @item, notice: CurdHelper.messages[:update]
       else
         render :edit
       end
     end
 
     def destroy
-      @item = CurdHelper.model.find(params[:id])
+      @item = CurdHelper.model_class.find(params[:id])
       @item.destroy
-      redirect_to admin_posts_url, notice: 'Post was successfully destroyed.'
+      redirect_to CurdHelper.model, notice: CurdHelper.messages[:destroy]
     end
 
 
     private
     def set_item
-      @item = CurdHelper.model.find(params[:id])
+      @item = CurdHelper.model_class.find(params[:id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def item_params
-      params.require(:admin_post).permit!
+      params.require(CurdHelper.model).permit(CurdHelper.fields)
     end
   end
 

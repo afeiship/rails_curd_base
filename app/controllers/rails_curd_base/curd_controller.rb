@@ -5,7 +5,7 @@ include RailsCurdBase::CurdHelper
 module RailsCurdBase
 
   class CurdController < ActionController::Base
-    include RailsCurdBase::CurdActions;
+    include CurdActions
   end
 
 end

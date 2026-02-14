@@ -1,0 +1,195 @@
+### RailsCurdBase API Test File
+### Base URL: http://localhost:3000/api
+
+# =============================================================================
+# Posts API - CRUD Examples
+# =============================================================================
+
+###
+# @name Get all posts (index)
+# @description Retrieve list of posts with pagination, sorting, searching, and filtering
+GET http://localhost:3000/api/posts
+Accept: application/json
+
+###
+
+# @name Get paginated posts
+# @description Get second page with 5 items per page
+GET http://localhost:3000/api/posts?page=2&size=5
+
+###
+
+# @name Get sorted posts (descending)
+# @description Sort posts by created_at in descending order (newest first)
+GET http://localhost:3000/api/posts?sort=-created_at
+
+###
+
+# @name Get sorted posts (ascending)
+# @description Sort posts by title in ascending order (A-Z)
+GET http://localhost:3000/api/posts?sort=title
+
+###
+
+# @name Search posts
+# @description Search for posts containing "Rails" in title or content
+GET http://localhost:3000/api/posts?q=Rails
+
+###
+
+# @name Filter posts (equals)
+# @description Get only published posts
+GET http://localhost:3000/api/posts?filter[status]=published
+
+###
+
+# @name Filter posts (greater than or equal)
+# @description Get posts with views >= 100
+GET http://localhost:3000/api/posts?filter[views][gte]=100
+
+###
+
+# @name Filter posts (in array)
+# @description Get posts where category_id is in [1, 2, 3]
+GET http://localhost:3000/api/posts?filter[category_id][in]=1,2,3
+
+###
+
+# @name Combined query
+# @description Pagination + sorting + searching + filtering
+GET http://localhost:3000/api/posts?page=1&size=10&sort=-created_at&q=Ruby&filter[status]=published
+
+###
+
+# =============================================================================
+# Single Post Operations
+# =============================================================================
+
+###
+# @name Get single post
+# @description Retrieve a specific post by ID
+GET http://localhost:3000/api/posts/1
+Accept: application/json
+
+###
+
+# =============================================================================
+# Create Post
+# =============================================================================
+
+###
+# @name Create a new post (published)
+# @description Create a new published post
+POST http://localhost:3000/api/posts
+Content-Type: application/json
+
+{
+  "title": "My First Post",
+  "content": "This is my first post content with some interesting details about Ruby on Rails.",
+  "status": "published"
+}
+
+###
+
+# @name Create a draft post
+# @description Create a new draft post
+POST http://localhost:3000/api/posts
+Content-Type: application/json
+
+{
+  "title": "Draft Post",
+  "content": "This is a draft post, not yet published.",
+  "status": "draft"
+}
+
+###
+
+# =============================================================================
+# Update Post
+# =============================================================================
+
+###
+# @name Update post title
+# @description Update title of an existing post
+PUT http://localhost:3000/api/posts/1
+Content-Type: application/json
+
+{
+  "title": "Updated Title"
+}
+
+###
+
+# @name Update post content and status
+# @description Update multiple fields at once
+PUT http://localhost:3000/api/posts/1
+Content-Type: application/json
+
+{
+  "content": "Updated content with more details.",
+  "status": "published"
+}
+
+###
+
+# =============================================================================
+# Delete Post
+# =============================================================================
+
+###
+# @name Delete a post
+# @description Permanently delete a post by ID
+DELETE http://localhost:3000/api/posts/1
+
+###
+
+# =============================================================================
+# Expected Response Formats
+# =============================================================================
+
+# Success Response:
+# {
+#   "success": true,
+#   "code": 200,
+#   "msg": "Retrieved successfully",
+#   "data": {
+#     "rows": [...],
+#     "total": 100
+#   }
+# }
+
+# Error Response:
+# {
+#   "success": false,
+#   "code": 422,
+#   "msg": "Validation failed",
+#   "data": {
+#     "errors": ["Title can't be blank"]
+#   }
+# }
+
+# =============================================================================
+# Query Parameters Reference
+# =============================================================================
+
+# Pagination:
+#   page  - Page number (default: 1)
+#   size  - Items per page (default: 10, max: 50)
+#
+# Sorting:
+#   sort  - Field to sort by (prefix with - for descending)
+#   Examples: ?sort=title, ?sort=-created_at
+#
+# Searching:
+#   q     - Search term (searches across searchable_fields)
+#   Example: ?q=Rails
+#
+# Filtering:
+#   filter[field]              - Equals (eq)
+#   filter[field][neq]=value   - Not equals (neq)
+#   filter[field][gt]=value     - Greater than (gt)
+#   filter[field][gte]=value    - Greater than or equal (gte)
+#   filter[field][lt]=value     - Less than (lt)
+#   filter[field][lte]=value    - Less than or equal (lte)
+#   filter[field][in]=1,2,3     - In array (in)
+#   filter[field][nin]=1,2,3    - Not in array (nin)

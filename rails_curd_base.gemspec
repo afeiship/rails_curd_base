@@ -23,4 +23,6 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 6.0"
+  spec.add_dependency "kaminari", ">= 0.16"
+  spec.add_dependency "rails_warp", ">= 0.1.0"
 end

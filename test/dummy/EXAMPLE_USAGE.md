@@ -2,6 +2,26 @@
 
 本目录包含一个完整的示例，展示如何使用 `rails_curd_base` gem。
 
+## 前置要求
+
+确保你的应用已安装以下依赖：
+
+1. **kaminari** - 分页支持（必需）
+2. **rails_warp** - 统一响应格式（必需）
+
+在 Gemfile 中添加：
+
+```ruby
+gem "kaminari"
+gem "rails_warp"
+```
+
+然后运行：
+
+```bash
+bundle install
+```
+
 ## 示例：Posts API
 
 ### 1. 模型定义

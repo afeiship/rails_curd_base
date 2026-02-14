@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ruby:*)"
+      "Bash(ruby:*)",
+      "Bash(http_proxy=http://127.0.0.1:9090 https_proxy=http://127.0.0.1:9090 bundle install)",
+      "Bash(bin/rails:*)",
+      "Bash(curl:*)",
+      "Bash(bundle show:*)"
     ]
   }
 }

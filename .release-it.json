@@ -3,22 +3,22 @@
     "requireCleanWorkingDir": false
   },
   "hooks": {
-    "after:init": ["git add .],
-    "after:bump": [
-      "sed -i '' \"s/\\\\.VERSION = \".*\"/\\\\.VERSION = \\\"${version}\\\"/\" lib/rails_curd_base/version.rb",
-      "git add lib/rails_curd_base/version.rb",
-      "git commit -m \"chore(release): ${version}\""
+    "after:init": [
+      "t2k",
+      "npm run clean"
     ],
-    "after:release": [
-      "gem push rails_curd_base-${version}.gem",
-      "git push"
+    "after:bump": [
+      "syncv -p lib/rails_curd_base/version.rb",
+      "npm run build",
+      "npm run pubpush"
     ]
   },
   "github": {
-    "release": true,
+    "release": false,
+    "proxy": "http://127.0.0.1:9090",
     "releaseName": "Release ${version}",
     "skipChecks": true,
-    "releaseNotes": "cat CHANGELOG.md | grep -A 50 \"${version}\" || echo \"Release ${version}\""
+    "releaseNotes": "git log --no-merges --pretty=format:\"* %s %h\" ${latestTag}...main"
   },
   "npm": {
     "publish": false,

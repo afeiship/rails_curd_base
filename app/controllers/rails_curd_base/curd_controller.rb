@@ -11,7 +11,7 @@ module RailsCurdBase
         query_config[:meta][:rows_key] => serialize_collection(result[:collection]),
       }
       data.merge!(result[:meta]) if result[:meta]
-      ok data: data, message: "Retrieved successfully"
+      ok data: data
     end
 
     def show
@@ -24,7 +24,7 @@ module RailsCurdBase
       if before_save(@resource) && @resource.save
         after_save(@resource)
         data = serialize_resource(@resource)
-        ok data: data, message: "Created successfully", code: 201
+        ok data: data, code: 201
       else
         fail message: "Validation failed", code: 422, data: { errors: @resource.errors.full_messages }
       end
@@ -34,7 +34,7 @@ module RailsCurdBase
       if before_save(resource) && resource.update(resource_params)
         after_save(resource)
         data = serialize_resource(resource)
-        ok data: data, message: "Updated successfully"
+        ok data: data
       else
         fail message: "Validation failed", code: 422, data: { errors: resource.errors.full_messages }
       end
@@ -58,7 +58,7 @@ module RailsCurdBase
 
     def destroy
       resource.destroy
-      ok message: "Deleted successfully", code: 204
+      ok code: 204
     end
 
     private

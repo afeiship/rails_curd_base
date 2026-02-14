@@ -1,26 +1,28 @@
 # RailsCurdBase
+Short description and motivation.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/templates`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+## Usage
+How to use my plugin.
 
 ## Installation
-
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rails_curd_base'
+gem "rails_curd_base"
 ```
 
 And then execute:
-
-    $ bundle
+```bash
+$ bundle
+```
 
 Or install it yourself as:
+```bash
+$ gem install rails_curd_base
+```
 
-    $ gem install templates
+## Contributing
+Contribution directions go here.
 
-
-## todos:
-- [ ] dynamic actions
-- [ ] dynamic attrs/helpers for curd_helper
+## License
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

@@ -1,34 +1,26 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'templates/version'
+require_relative "lib/rails_curd_base/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "rails_curd_base"
-  spec.version       = RailsCurdBase::VERSION
-  spec.authors       = ["afeiship"]
-  spec.email         = ["1290657123@qq.com"]
+  spec.name        = "rails_curd_base"
+  spec.version     = RailsCurdBase::VERSION
+  spec.authors     = [ "aric.zheng" ]
+  spec.email       = [ "1290657123@qq.com" ]
+  spec.homepage    = "TODO"
+  spec.summary     = "TODO: Summary of RailsCurdBase."
+  spec.description = "TODO: Description of RailsCurdBase."
+  spec.license     = "MIT"
 
-  spec.summary       = %q{A cool curd base controller.}
-  spec.description   = %q{My rails curd base.}
-  spec.homepage      = "https://github.com/afeiship/rails_curd_base"
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
+  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"
   # to allow pushing to a single host or delete this section to allow pushing to any host.
-  if spec.respond_to?(:metadata)
-    # spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
-  else
-    raise "RubyGems 2.0 or newer is required to protect against " \
-      "public gem pushes."
+  spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
+
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
+  spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
+
+  spec.files = Dir.chdir(File.expand_path(__dir__)) do
+    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
-
-  spec.add_development_dependency "bundler", "~> 1.14"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_dependency "rails", ">= 6.0"
 end

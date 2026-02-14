@@ -1,6 +1,6 @@
 # RailsCurdBase - AI Assistant Guide
 
-> RailsCurdBase is a Ruby on Rails CRUD base controller gem providing ready-to-use Create, Read, Update, Delete functionality with advanced query capabilities including pagination, sorting, searching, and filtering. It integrates RailsWarp for unified JSON responses and Kaminari for pagination.
+> RailsCurdBase is a Ruby on Rails CRUD base controller gem providing ready-to-use Create, Read, Update, Delete functionality with advanced query capabilities including pagination, sorting, searching, and filtering. It uses RailsWarp for unified JSON responses and Kaminari for pagination.
 
 **IMPORTANT NOTES FOR AI ASSISTANTS:**
 - RailsCurdBase inherits from ActionController::API for Rails API applications
@@ -9,10 +9,12 @@
 - Built-in Queryable concern provides pagination, sorting, searching, filtering
 - Four lifecycle hooks: before_create, after_create, before_update, after_update
 - Resource automatically derived: controller_name.singularize.classify.constantize
+- Success responses use default "success" message from RailsWarp (no custom message)
+- Error responses keep custom messages ("Validation failed", "Record not found")
 
 ## DOCUMENTATION LINKS
 
-- Repository: https://github.com/afeiship/rails_curd_base
+- Repository: https://github.com/aferic/rails_curd_base
 - Usage Guide: test/dummy/EXAMPLE_USAGE.md (complete API documentation and examples)
 - Test/Demo App: test/dummy/ directory (fully working example)
 
@@ -20,7 +22,7 @@
 
 ### 1. Zero-Configuration CRUD
 Inherit from CurdController to get complete CRUD:
-- index: List with pagination, sorting, searching, filtering
+- index: List with query capabilities (pagination, sorting, searching, filtering)
 - show: Single record retrieval
 - create: Create new records
 - update: Update existing records
@@ -28,13 +30,13 @@ Inherit from CurdController to get complete CRUD:
 
 ### 2. Queryable Module (supports_query)
 Configure via supports_query:
-- Pagination: page, size parameters (Kaminari)
-- Sorting: sort parameter (supports -field for desc)
-- Searching: q parameter (multi-field LIKE search)
-- Filtering: filter parameter (eq, neq, gt, gte, lt, lte, in, nin operators)
+- **Pagination**: page, size parameters (Kaminari)
+- **Sorting**: sort parameter (supports -field for desc)
+- **Searching**: q parameter (multi-field LIKE search)
+- **Filtering**: filter parameter (eq, neq, gt, gte, lt, lte, in, nin operators)
 
 ### 3. Unified Response Format (RailsWarp)
-- ok: success response with data, message, code
+- ok: success response with data, code
 - fail: error response with message, code, errors data
 
 ### 4. Lifecycle Hooks
@@ -82,33 +84,35 @@ GET /api/posts?page=1&size=10&sort=-created_at&q=rails&filter[status]=published
 # Show single
 GET /api/posts/1
 
-# Create
+# Create (flat format - recommended)
+POST /api/posts
+{"title": "Hello", "content": "World", "status": "published"}
+
+# Create (nested format - also supported)
 POST /api/posts
 {"post": {"title": "Hello", "content": "World", "status": "published"}}
 
-# Update
+# Update (flat format - recommended)
 PUT /api/posts/1
-{"post": {"title": "Updated"}}
+{"title": "Updated"}
 
 # Delete
 DELETE /api/posts/1
 ```
 
-### Response Format
-Success:
+## RESPONSE FORMAT
+
+### Success Response
 ```json
 {
   "success": true,
   "code": 200,
-  "msg": "Retrieved successfully",
-  "data": {
-    "rows": [...],
-    "total": 100
-  }
+  "msg": "success",
+  "data": { ... }
 }
 ```
 
-Error:
+### Error Response
 ```json
 {
   "success": false,
@@ -169,14 +173,17 @@ supports_query(
     filter_param: :filter
   }
 )
-# Usage:
-# ?filter[status]=published (eq)
-# ?filter[status][neq]=draft (not equals)
-# ?filter[views][gte]=100 (greater than or equal)
-# ?filter[views][lte]=1000 (less than or equal)
-# ?filter[category_id][in]=1,2,3 (in array)
-# ?filter[status][nin]=draft,archived (not in array)
 ```
+
+Supported operators:
+- `?filter[field]=value` → Equals (eq)
+- `?filter[field][neq]=value` → Not equals (neq)
+- `?filter[field][gt]=value` → Greater than (gt)
+- `?filter[field][gte]=value` → Greater than or equal (gte)
+- `?filter[field][lt]=value` → Less than (lt)
+- `?filter[field][lte]=value` → Less than or equal (lte)
+- `?filter[field][in]=1,2,3` → In array (in)
+- `?filter[field][nin]=1,2,3` → Not in array (nin)
 
 ## CUSTOMIZATION
 
@@ -192,8 +199,6 @@ end
 ### Lifecycle Hooks
 ```ruby
 class Api::PostsController < RailsCurdBase::CurdController
-  before_action :authenticate_user!
-
   def before_create(resource)
     resource.author = current_user
     resource.published_at = Time.current if resource.status == 'published'
@@ -247,7 +252,7 @@ class Api::PostsController < RailsCurdBase::CurdController
   end
 
   def set_post
-    @post = current_user.posts.find(params[:id])
+    @post = current_user.posts.find_by(id: params[:id])
   end
 end
 ```
@@ -293,17 +298,9 @@ def not_found
 end
 ```
 
-### Soft Deletes
-```ruby
-def destroy
-  resource.update!(deleted_at: Time.current)
-  ok message: 'Deleted successfully', code: 204
-end
-```
-
 ## TESTING
 
-Run the dummy application:
+Run dummy application:
 ```bash
 cd test/dummy
 bin/rails db:migrate
@@ -320,9 +317,9 @@ curl -X POST http://localhost:3000/api/posts -H 'Content-Type: application/json'
 
 ## DEPENDENCIES
 
-- rails >= 6.0
-- kaminari >= 0.16 (pagination)
-- rails_warp >= 0.1.0 (unified responses)
+- **rails** >= 6.0
+- **kaminari** >= 0.16 - Pagination functionality
+- **rails_warp** >= 0.1.0 - Unified response format
 
 ## IMPORTANT NOTES FOR AI ASSISTANTS
 
@@ -332,18 +329,20 @@ curl -X POST http://localhost:3000/api/posts -H 'Content-Type: application/json'
 4. Resource is auto-derived: controller_name.singularize.classify.constantize
 5. Override collection() to scope data (current_user.posts, etc.)
 6. Use hooks (before_create, after_create, etc.) for callbacks
-7. Parameters via resource_params() method (auto-permits :resource param)
+7. Parameters via resource_params() method (automatically handles strong parameters)
 8. Query parameters: page, size, sort, q, filter[field]
 9. All query features are optional (enable/disable in supports_query)
 10. Filter operators: eq (default), neq, gt, gte, lt, lte, in, nin
+11. Success responses use default "success" message from RailsWarp
+12. Error responses keep custom messages (validation failed, record not found)
+13. Request format: supports both flat {"title":"..."} and nested {"post":{"title":"..."}} formats
 
 ## PERFORMANCE TIPS
 
-- Add database indexes on filtered/sorted fields
-- Use select() to limit fields in queries
-- Override serialize_resource for custom JSON output
-- Use caching in hooks for expensive operations
-- Optimize collection() for complex queries
+1. For large datasets, ensure database fields are indexed (especially on filtered/sorted fields)
+2. Use select() to limit queried fields (by overriding serialize_resource)
+3. Consider caching (in hook methods)
+4. For complex queries, override collection() method to optimize SQL
 
 ## FILE STRUCTURE
 
@@ -356,7 +355,7 @@ app/controllers/concerns/rails_curd_base/
   queryable.rb             # Query functionality
 ```
 
-## CONTRIBUTE
+## CONTRIBUTING
 
 Contributions welcome! Please:
 - Follow existing code style

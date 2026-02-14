@@ -1,0 +1,369 @@
+# RailsCurdBase - AI Assistant Guide
+
+> RailsCurdBase is a Ruby on Rails CRUD base controller gem providing ready-to-use Create, Read, Update, Delete functionality with advanced query capabilities including pagination, sorting, searching, and filtering. It integrates RailsWarp for unified JSON responses and Kaminari for pagination.
+
+**IMPORTANT NOTES FOR AI ASSISTANTS:**
+- RailsCurdBase inherits from ActionController::API for Rails API applications
+- All responses use RailsWarp unified format: { success: boolean, code: integer, msg: string, data: object }
+- Controllers automatically derive resource class from controller name (Api::PostsController => Post model)
+- Built-in Queryable concern provides pagination, sorting, searching, filtering
+- Four lifecycle hooks: before_create, after_create, before_update, after_update
+- Resource automatically derived: controller_name.singularize.classify.constantize
+
+## DOCUMENTATION LINKS
+
+- Repository: https://github.com/afeiship/rails_curd_base
+- Usage Guide: test/dummy/EXAMPLE_USAGE.md (complete API documentation and examples)
+- Test/Demo App: test/dummy/ directory (fully working example)
+
+## CORE FEATURES
+
+### 1. Zero-Configuration CRUD
+Inherit from CurdController to get complete CRUD:
+- index: List with pagination, sorting, searching, filtering
+- show: Single record retrieval
+- create: Create new records
+- update: Update existing records
+- destroy: Delete records
+
+### 2. Queryable Module (supports_query)
+Configure via supports_query:
+- Pagination: page, size parameters (Kaminari)
+- Sorting: sort parameter (supports -field for desc)
+- Searching: q parameter (multi-field LIKE search)
+- Filtering: filter parameter (eq, neq, gt, gte, lt, lte, in, nin operators)
+
+### 3. Unified Response Format (RailsWarp)
+- ok: success response with data, message, code
+- fail: error response with message, code, errors data
+
+### 4. Lifecycle Hooks
+- before_create(resource): called before create, return false to abort
+- after_create(resource): called after successful create
+- before_update(resource): called before update, return false to abort
+- after_update(resource): called after successful update
+
+### 5. Automatic Resource Derivation
+- resource_class: Model class (auto-derived from controller name)
+- resource_key: Parameter symbol (:post, :user, etc.)
+- resource: Current resource instance (@post, @user, etc.)
+
+## INSTALLATION
+
+Add to Gemfile:
+```ruby
+gem 'rails_curd_base'
+```
+
+Run:
+```bash
+bundle install
+```
+
+## BASIC USAGE
+
+### Create Controller
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  supports_query(
+    pagination: { enabled: true, default_per: 10, max_per: 50 },
+    sorting: { enabled: true, allowed_fields: [:id, :title, :created_at] },
+    searching: { enabled: true, searchable_fields: [:title, :content] },
+    filtering: { enabled: true, filterable_fields: [:status] }
+  )
+end
+```
+
+### API Endpoints
+```bash
+# List (with pagination, sorting, searching, filtering)
+GET /api/posts?page=1&size=10&sort=-created_at&q=rails&filter[status]=published
+
+# Show single
+GET /api/posts/1
+
+# Create
+POST /api/posts
+{"post": {"title": "Hello", "content": "World", "status": "published"}}
+
+# Update
+PUT /api/posts/1
+{"post": {"title": "Updated"}}
+
+# Delete
+DELETE /api/posts/1
+```
+
+### Response Format
+Success:
+```json
+{
+  "success": true,
+  "code": 200,
+  "msg": "Retrieved successfully",
+  "data": {
+    "rows": [...],
+    "total": 100
+  }
+}
+```
+
+Error:
+```json
+{
+  "success": false,
+  "code": 422,
+  "msg": "Validation failed",
+  "data": {
+    "errors": ["Title can't be blank"]
+  }
+}
+```
+
+## QUERYABLE CONFIGURATION
+
+### Pagination
+```ruby
+supports_query(
+  pagination: {
+    enabled: true,
+    default_per: 20,
+    max_per: 100,
+    page_param: :page,
+    per_param: :size
+  }
+)
+```
+
+### Sorting
+```ruby
+supports_query(
+  sorting: {
+    enabled: true,
+    allowed_fields: [:id, :title, :created_at],
+    sort_param: :sort
+  }
+)
+# Usage: ?sort=field or ?sort=-field (desc)
+```
+
+### Searching
+```ruby
+supports_query(
+  searching: {
+    enabled: true,
+    searchable_fields: [:title, :content],
+    search_param: :q
+  }
+)
+# Usage: ?q=search_term
+# Performs: WHERE field LIKE '%term%' OR field2 LIKE '%term%'
+```
+
+### Filtering
+```ruby
+supports_query(
+  filtering: {
+    enabled: true,
+    filterable_fields: [:status, :category_id],
+    filter_param: :filter
+  }
+)
+# Usage:
+# ?filter[status]=published (eq)
+# ?filter[status][neq]=draft (not equals)
+# ?filter[views][gte]=100 (greater than or equal)
+# ?filter[views][lte]=1000 (less than or equal)
+# ?filter[category_id][in]=1,2,3 (in array)
+# ?filter[status][nin]=draft,archived (not in array)
+```
+
+## CUSTOMIZATION
+
+### Override Collection (Scope Data)
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  def collection
+    current_user.posts  # Only current user's posts
+  end
+end
+```
+
+### Lifecycle Hooks
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  before_action :authenticate_user!
+
+  def before_create(resource)
+    resource.author = current_user
+    resource.published_at = Time.current if resource.status == 'published'
+    true  # Must return true to continue
+  end
+
+  def after_create(resource)
+    NotificationService.notify(resource)
+  end
+end
+```
+
+### Custom Resource Class
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  def resource_class
+    CustomPost  # Override auto-derivation
+  end
+end
+```
+
+### Custom Serialization
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  private
+
+  def serialize_resource(resource)
+    {
+      id: resource.id,
+      title: resource.title,
+      summary: resource.content.truncate(100)
+    }
+  end
+
+  def serialize_collection(collection)
+    collection.map { |r| serialize_resource(r) }
+  end
+end
+```
+
+### Add Authentication/Authorization
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  before_action :authenticate_user!
+  before_action :set_post, only: [:show, :update, :destroy]
+
+  private
+
+  def authenticate_user!
+    head :unauthorized unless current_user
+  end
+
+  def set_post
+    @post = current_user.posts.find(params[:id])
+  end
+end
+```
+
+## NAMING CONVENTIONS
+
+- Controller: Api::ResourcesController or ResourcesController
+- Model: Resource (auto-derived)
+- Parameter: :resource (auto-derived)
+- Instance: @resource (auto-derived)
+
+Examples:
+- Api::UsersController => User model, :user param, @user instance
+- Api::PostsController => Post model, :post param, @post instance
+- Api::CommentsController => Comment model, :comment param, @comment instance
+
+## COMMON PATTERNS
+
+### Nested Resources
+```ruby
+def collection
+  user.posts  # Assumes params[:user_id] or set_user before_action
+end
+```
+
+### Add Query Scopes
+```ruby
+def collection
+  base = super
+  base = base.where(published: true) unless current_user.admin?
+  base
+end
+```
+
+### Custom Error Handling
+```ruby
+rescue_from ActiveRecord::RecordNotFound, with: :not_found
+
+private
+
+def not_found
+  fail message: 'Record not found', code: 404
+end
+```
+
+### Soft Deletes
+```ruby
+def destroy
+  resource.update!(deleted_at: Time.current)
+  ok message: 'Deleted successfully', code: 204
+end
+```
+
+## TESTING
+
+Run the dummy application:
+```bash
+cd test/dummy
+bin/rails db:migrate
+bin/rails db:seed
+bin/rails server
+```
+
+Test API:
+```bash
+curl http://localhost:3000/api/posts
+curl http://localhost:3000/api/posts/1
+curl -X POST http://localhost:3000/api/posts -H 'Content-Type: application/json' -d '{"post":{"title":"Test"}}'
+```
+
+## DEPENDENCIES
+
+- rails >= 6.0
+- kaminari >= 0.16 (pagination)
+- rails_warp >= 0.1.0 (unified responses)
+
+## IMPORTANT NOTES FOR AI ASSISTANTS
+
+1. ALWAYS inherit from RailsCurdBase::CurdController for API controllers
+2. Use supports_query for query configuration (pagination, sorting, searching, filtering)
+3. Use ok() for success responses, fail() for error responses
+4. Resource is auto-derived: controller_name.singularize.classify.constantize
+5. Override collection() to scope data (current_user.posts, etc.)
+6. Use hooks (before_create, after_create, etc.) for callbacks
+7. Parameters via resource_params() method (auto-permits :resource param)
+8. Query parameters: page, size, sort, q, filter[field]
+9. All query features are optional (enable/disable in supports_query)
+10. Filter operators: eq (default), neq, gt, gte, lt, lte, in, nin
+
+## PERFORMANCE TIPS
+
+- Add database indexes on filtered/sorted fields
+- Use select() to limit fields in queries
+- Override serialize_resource for custom JSON output
+- Use caching in hooks for expensive operations
+- Optimize collection() for complex queries
+
+## FILE STRUCTURE
+
+```
+app/controllers/rails_curd_base/
+  curd_controller.rb       # Main controller
+  application_controller.rb
+
+app/controllers/concerns/rails_curd_base/
+  queryable.rb             # Query functionality
+```
+
+## CONTRIBUTE
+
+Contributions welcome! Please:
+- Follow existing code style
+- Add tests for new features
+- Update documentation
+- Submit PR with clear description
+
+## LICENSE
+
+MIT

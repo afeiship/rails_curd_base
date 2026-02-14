@@ -1,0 +1,28 @@
+{
+  "name": "rails_curd_base",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Rails CRUD base controller with query capabilities, pagination, sorting, searching, and filtering",
+  "main": "lib/rails_curd_base.rb",
+  "directories": {
+    "lib": "lib",
+    "test": "test/dummy"
+  },
+  "scripts": {
+    "clean": "rm -rf *.gem",
+    "build": "gem build *.gemspec",
+    "publish": "gem push *.gem",
+    "release": "release-it",
+    "rubocop": "bundle exec rubocop",
+    "console": "cd test/dummy && bin/rails console"
+  },
+  "keywords": [
+    "rails",
+    "crud",
+    "api",
+    "controller",
+    "ruby"
+  ],
+  "author": "afeiship",
+  "license": "MIT"
+}

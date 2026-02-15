@@ -186,6 +186,40 @@ DELETE /api/posts/1
 
 ## 高级用法
 
+### 自定义数据范围
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  # 只返回当前用户的文章
+  def collection
+    current_user.posts
+  end
+end
+```
+
+### 字段过滤
+
+**配置不同 action 返回不同字段**：
+```ruby
+class Api::PostsController < RailsCurdBase::CurdController
+  # index 只返回部分字段
+  index_fields :id, :title, :created_at
+
+  # show 返回完整字段
+  show_fields :id, :title, :content, :status, :created_at, :updated_at
+end
+```
+
+**动态指定返回字段（通过 URL 参数）**：
+```bash
+# 只返回 id 和 title
+GET /api/posts?fields=id,title
+
+# 只返回 id, title, created_at
+GET /api/posts/1?fields=id,title,created_at
+```
+
+**优先级**：URL 参数 > Action 配置 > 全部字段
+
 ### 生命周期钩子
 
 ```ruby
@@ -219,17 +253,6 @@ class Api::PostsController < RailsCurdBase::CurdController
 end
 ```
 
-### 自定义数据范围
-
-```ruby
-class Api::PostsController < RailsCurdBase::CurdController
-  # 只返回当前用户的文章
-  def collection
-    current_user.posts
-  end
-end
-```
-
 ### 嵌套资源
 
 ```ruby
@@ -240,7 +263,7 @@ class Api::UserPostsController < RailsCurdBase::CurdController
 end
 ```
 
-### 自定义序列化
+### 完全自定义序列化
 
 ```ruby
 class Api::PostsController < RailsCurdBase::CurdController

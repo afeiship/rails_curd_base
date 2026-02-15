@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rails_curd_base (0.1.0)
+    rails_curd_base (0.1.2)
       kaminari (>= 0.16)
       rails (>= 6.0)
       rails_warp (>= 0.1.0)

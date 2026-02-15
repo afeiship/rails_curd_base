@@ -5,6 +5,26 @@ module RailsCurdBase
     # === CRUD 基础动作 ===
     before_action :set_resource, only: %i[show update destroy]
 
+    class << self
+      # 配置 index 操作显示的字段
+      def index_fields(*fields)
+        @index_fields = fields
+      end
+
+      # 配置 show 操作显示的字段
+      def show_fields(*fields)
+        @show_fields = fields
+      end
+
+      def get_index_fields
+        @index_fields
+      end
+
+      def get_show_fields
+        @show_fields
+      end
+    end
+
     def index
       result = apply_query_with_meta(collection)
       data = {
@@ -65,11 +85,43 @@ module RailsCurdBase
 
     # === 序列化逻辑 ===
     def serialize_resource(resource)
-      resource.as_json
+      data = resource.as_json
+
+      # 优先级: 请求参数 > action 配置
+      fields = requested_fields || fields_for_action(action_name)
+      filter_fields(data, fields) if fields
+      data
     end
 
     def serialize_collection(collection)
-      collection.as_json
+      collection.map do |resource|
+        serialize_resource(resource)
+      end
+    end
+
+    # 从请求参数获取指定字段
+    def requested_fields
+      return nil unless params[:fields].present?
+
+      params[:fields].split(',').map(&:to_sym)
+    end
+
+    # 根据 action 获取配置的字段
+    def fields_for_action(action)
+      case action
+      when 'index'
+        self.class.get_index_fields
+      when 'show'
+        self.class.get_show_fields
+      else
+        nil
+      end
+    end
+
+    # 过滤字段
+    def filter_fields(data, fields)
+      fields_sym = fields.map(&:to_sym)
+      data.select! { |key, _| fields_sym.include?(key.to_sym) }
     end
 
     # === 资源推导 ===

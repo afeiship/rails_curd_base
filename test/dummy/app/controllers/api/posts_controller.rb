@@ -7,6 +7,12 @@ class Api::PostsController < RailsCurdBase::CurdController
     filtering: { enabled: true, filterable_fields: [:status] }
   )
 
+  # 配置 index 返回的字段（列表页不需要所有字段）
+  index_fields :id, :title, :status, :created_at
+
+  # 配置 show 返回的字段（详情页需要完整信息）
+  show_fields :id, :title, :content, :status, :published_at, :created_at, :updated_at
+
   # 可选：自定义 collection
   # def collection
   #   Post.all
